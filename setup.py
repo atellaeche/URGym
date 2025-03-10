@@ -2,8 +2,12 @@ from setuptools import setup, find_packages
 
 setup(
     name='urgym',
-    version='0.0.2',
-    packages=find_packages(),
+    version='0.0.3',
+    packages=find_packages(include=["urgym", "urgym.*"]),
+    include_package_data=True,  # Ensures non-Python files are included
+    package_data={
+        "urgym": ["meshes/**/*", "urdf/**/*"],  # Include all files within these folders
+    },
     install_requires=[
         'numpy==2.2.3',
         'gymnasium==1.0.0',
