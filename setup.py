@@ -5,8 +5,8 @@ setup(
     version='0.0.2',
     packages=find_packages(),
     install_requires=[
-        'numpy==1.26.4',
-        'gymnasium==0.29.1',
+        'numpy==2.2.3',
+        'gymnasium==1.0.0',
         'pybullet'
     ],
     author='Inaki Vazquez',
