@@ -70,8 +70,8 @@ class CubesGrasp(Env):
         # The end-effector position and quaternion (x, y, z, qx, qy, qz, qw) and gripper opening length in[0,1]
         # And the target cube position and quaternion (x, y, z, qx, qy, qz, qw)
         self.observation_space = Box(low=np.array([0]*2 + [-1.0]*3 + [-1]*4 + [0] + [-1.0]*3 + [-1.0]*4), high=np.array([1]*2 + [1.0]*3 + [1.0]*4 + [1] + [1.0]*3 + [1.0]*4), dtype=np.float64)
-        # Actions: prob1,prob2, joint_states, gripper action (open/close)
-        self.action_space = Box(low=np.array([0]*2 + [-math.pi]*6 + [0]), high=np.array([1]*2 + [+math.pi]*6 + [1]), dtype=np.float32)
+        # Actions: joint_states, gripper action (open/close)
+        self.action_space = Box(low=np.array([-math.pi]*6 + [0]), high=np.array([+math.pi]*6 + [1]), dtype=np.float32)
 
     def step_simulation(self):
         """
@@ -118,30 +118,19 @@ class CubesGrasp(Env):
         """
         reward = 0
         
-        action_move_prob = action[0]
-        action_gripper_prob = action[1]
+        action_move_actions = action[0:-1]
+        action_gripper_action = action[-1]
 
-        action_move_actions = action[2:-1]
-        action_gripper_actions = action[-1]
+        # Move the end effector
+        self.robot.move_ee(action_move_actions, self.control_method)
+        self.wait_until_stable()
 
-        if action_move_prob + action_gripper_prob == 0: # Avoid the sum to be zero
-            action_selected = random.choices([0, 1], weights=[0.5, 0.5], k=1)[0]
-        else:
-            action_selected = random.choices([0, 1], weights=[action_move_prob, action_gripper_prob], k=1)[0]
-        #action_selected = np.argmax([action_move_prob, action_gripper_prob])
-
-        if action_selected == 0:
-            # Move the end effector and close
-            self.robot.move_ee(action_move_actions, self.control_method)
+        if action_gripper_action < 0.5:
+            self.robot.open_gripper()
             self.wait_until_stable()
-        elif action_selected == 1:
-            # Open/close the gripper
-            if action_gripper_actions < 0.5:
-                self.robot.open_gripper()
-                self.wait_until_stable()
-            else:
-                self.robot.close_gripper() 
-                self.wait_until_stable()
+        else:
+            self.robot.close_gripper() 
+            self.wait_until_stable()
 
         reward += self.update_reward()
         info = {'is_success': False}
