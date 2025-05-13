@@ -105,7 +105,7 @@ class CubesGrasp(Env):
             if np.sum(np.abs(np.array(pos)-np.array(new_pos))) < 5e-3: # Threshold based on experience
                 return True
             pos = new_pos
-        print("Warning: The robot configuration did not stabilize")
+        #print("Warning: The robot configuration did not stabilize")
         return False
 
 
